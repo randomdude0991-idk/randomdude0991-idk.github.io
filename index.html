@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beauty Center Amra</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta property="og:title" content="Beauty Center Amra">
+    <meta property="og:description" content="Professional beauty services specializing in hairstyling and treatments">
+    <meta property="og:image" content="favicon.png">
+    <meta property="og:url" content="https://beautycenteramra.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -19,6 +24,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Arial', sans-serif;
+            scroll-behavior: smooth;
         }
         
         body {
@@ -58,8 +64,12 @@
             align-items: center;
         }
         
-        .logo i {
+        .logo-img {
+            width: 40px;
+            height: 40px;
             margin-right: 10px;
+            border-radius: 50%;
+            object-fit: cover;
         }
         
         .nav-links {
@@ -76,10 +86,26 @@
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .nav-links a:hover {
             color: var(--dark);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--light);
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
         }
         
         .hero {
@@ -114,11 +140,13 @@
         .hero h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
+            animation: fadeInDown 1s ease;
         }
         
         .hero p {
             font-size: 1.2rem;
             margin-bottom: 2rem;
+            animation: fadeInUp 1s ease;
         }
         
         .btn {
@@ -134,6 +162,7 @@
             font-weight: 600;
             transition: all 0.3s ease;
             margin: 0.5rem;
+            animation: fadeIn 1.5s ease;
         }
         
         .btn:hover {
@@ -477,7 +506,41 @@
             background: var(--secondary);
             transform: translateY(-5px);
         }
-        
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth scroll for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
@@ -503,7 +566,7 @@
         <div class="container">
             <nav>
                 <div class="logo">
-                    <i class="fas fa-spa"></i>
+                    <img src="favicon.png" alt="Beauty Center Amra Logo" class="logo-img">
                     <span>Beauty Center Amra</span>
                 </div>
                 <ul class="nav-links">
@@ -810,5 +873,24 @@
             <i class="fas fa-calendar-alt"></i>
         </a>
     </div>
+
+    <script>
+        // Smooth scrolling for all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
