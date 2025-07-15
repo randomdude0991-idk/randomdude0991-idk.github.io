@@ -410,7 +410,8 @@
         }
         
         .contact-form input,
-        .contact-form textarea {
+        .contact-form textarea,
+        .contact-form select {
             width: 100%;
             padding: 1rem;
             margin-bottom: 1rem;
@@ -558,7 +559,52 @@
                 font-size: 2rem;
             }
         }
+
+        /* New styles for form validation and reCAPTCHA */
+        .contact-form input:required:invalid,
+        .contact-form textarea:required:invalid,
+        .contact-form select:required:invalid {
+            border-color: #ff6b98;
+        }
+        
+        .contact-form input:required:valid,
+        .contact-form textarea:required:valid,
+        .contact-form select:required:valid {
+            border-color: #ccc;
+        }
+        
+        .error-message {
+            color: #ff6b98;
+            font-size: 0.8rem;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .g-recaptcha {
+            margin-bottom: 1rem;
+        }
+        
+        #form-success {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        #form-error {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
     </style>
+    <!-- Add reCAPTCHA script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <!-- Header -->
@@ -752,6 +798,7 @@
         </div>
     </section>
 
+    <!-- Contact Section -->
     <section id="contact">
         <div class="container">
             <div class="section-title">
@@ -796,11 +843,23 @@
                     </iframe>
                 </div>
                 <div class="contact-form">
-                    <form>
-                        <input type="text" placeholder="Your Name" required>
-                        <input type="email" placeholder="Your Email" required>
-                        <input type="tel" placeholder="Your Phone">
-                        <select required>
+                    <div id="form-success">
+                        Thank you for your message! We'll get back to you soon.
+                    </div>
+                    <div id="form-error">
+                        There was an error sending your message. Please try again.
+                    </div>
+                    <form id="contactForm">
+                        <input type="text" id="name" name="name" placeholder="Your Name" required>
+                        <div class="error-message" id="name-error">Please enter your name</div>
+                        
+                        <input type="email" id="email" name="email" placeholder="Your Email" required>
+                        <div class="error-message" id="email-error">Please enter a valid email</div>
+                        
+                        <input type="tel" id="phone" name="phone" placeholder="Your Phone" required>
+                        <div class="error-message" id="phone-error">Please enter your phone number</div>
+                        
+                        <select id="service" name="service" required>
                             <option value="">Select Service</option>
                             <option value="haircut">Girl's Haircut</option>
                             <option value="braiding">Hair coloring</option>
@@ -809,8 +868,15 @@
                             <option value="accessories">Hair Shatir</option>
                             <option value="party">Hairstyle</option>
                         </select>
-                        <textarea placeholder="Your Message"></textarea>
-                        <button type="submit" class="btn">Send Message</button>
+                        <div class="error-message" id="service-error">Please select a service</div>
+                        
+                        <textarea id="message" name="message" placeholder="Your Message" required></textarea>
+                        <div class="error-message" id="message-error">Please enter your message</div>
+                        
+                        <div class="g-recaptcha" data-sitekey="6LdrUXorAAAAADRUeNk1ahpwcmI9r9Y9cwlqOMFC"></div>
+                        <div class="error-message" id="recaptcha-error">Please complete the reCAPTCHA</div>
+                        
+                        <button type="submit" class="btn" id="submit-btn">Send Message</button>
                     </form>
                 </div>
             </div>
@@ -888,6 +954,131 @@
                         behavior: 'smooth'
                     });
                 }
+            });
+        });
+
+        // Form handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactForm = document.getElementById('contactForm');
+            const formSuccess = document.getElementById('form-success');
+            const formError = document.getElementById('form-error');
+            
+            // Discord webhook URL - replace with your actual webhook URL
+            const DISCORD_WEBHOOK_URL = 'https://canary.discord.com/api/webhooks/1394473270480474132/FY8brt5kJGaBnyc8fgBRv1Vnwn8nH0mEZ2hAb6ng7lsbu_c4BIYqi4RKtkipQjXthNnh';
+            
+            // Form validation
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Reset error messages
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // Hide previous messages
+                formSuccess.style.display = 'none';
+                formError.style.display = 'none';
+                
+                // Validate form fields
+                let isValid = true;
+                const name = document.getElementById('name');
+                const email = document.getElementById('email');
+                const phone = document.getElementById('phone');
+                const service = document.getElementById('service');
+                const message = document.getElementById('message');
+                const recaptchaResponse = grecaptcha.getResponse();
+                
+                if (!name.value.trim()) {
+                    document.getElementById('name-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                    document.getElementById('email-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                if (!phone.value.trim()) {
+                    document.getElementById('phone-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                if (!service.value) {
+                    document.getElementById('service-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                if (!message.value.trim()) {
+                    document.getElementById('message-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                if (!recaptchaResponse) {
+                    document.getElementById('recaptcha-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    return;
+                }
+                
+                // Disable submit button to prevent multiple submissions
+                const submitBtn = document.getElementById('submit-btn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
+                
+                // Prepare data for Discord
+                const formData = {
+                    name: name.value.trim(),
+                    email: email.value.trim(),
+                    phone: phone.value.trim(),
+                    service: service.options[service.selectedIndex].text,
+                    message: message.value.trim(),
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Create Discord message content
+                const discordMessage = {
+                    content: '**New Contact Form Submission**',
+                    embeds: [{
+                        title: 'Contact Details',
+                        color: 0xff6b98, // Pink color to match your theme
+                        fields: [
+                            { name: 'Name', value: formData.name },
+                            { name: 'Email', value: formData.email },
+                            { name: 'Phone', value: formData.phone },
+                            { name: 'Service', value: formData.service },
+                            { name: 'Message', value: formData.message },
+                            { name: 'Submitted At', value: new Date(formData.timestamp).toLocaleString() }
+                        ]
+                    }]
+                };
+                
+                // Send to Discord webhook
+                fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(discordMessage)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        formSuccess.style.display = 'block';
+                        contactForm.reset();
+                        grecaptcha.reset();
+                    } else {
+                        throw new Error('Network response was not ok');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    formError.style.display = 'block';
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send Message';
+                });
             });
         });
     </script>
